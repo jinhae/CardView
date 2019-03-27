@@ -8,13 +8,40 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController{
 
+    @IBOutlet weak var scrollView: CardView!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        
     }
-
+    
+    
+    @IBAction func TestButton(_ sender: Any) {
+        self.scrollView.isScrollEnabled = true
+        print(self.scrollView.contentHorizonViewIndex)
+    }
+    
+    
+    var index: Int = 0
+    @IBAction func nextAction(_ sender: Any) {
+//        self.scrollView.moveNext()
+        index += 1
+        self.scrollView.contentHorizonViewIndex = index
+        print(index)
+        
+    }
+    @IBAction func beforAction(_ sender: Any) {
+//        self.scrollView.moveBefore()
+        index -= 1
+        self.scrollView.contentHorizonViewIndex = index
+        print(index)
+    }
+    
+    
 
 }
 
