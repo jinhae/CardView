@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 extension UIView{
     func scale(defaultSize:CGSize, scale:CGFloat){
         let widthVector  = (defaultSize.width * scale) - defaultSize.width
@@ -19,8 +20,6 @@ extension UIView{
                       height:   defaultSize.height + heightVector)
     }
 }
-
-
 
 class CardView: UIScrollView, UIScrollViewDelegate {
     //Content View MaxScale
@@ -107,12 +106,16 @@ class CardView: UIScrollView, UIScrollViewDelegate {
         }
     }
     
+    func move(At index:Int){
+        if (index >= 0) && (index < self.contentHorizonViewCount){
+            self.setContentOffset(CGPoint(x: self.frame.width * CGFloat(index), y: 0), animated: true)
+        }
+        
+    }
+    
     
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        
-        
-        
         
         self.mainContentView.frame = CGRect(x: self.contentOffset.x * ((self.contentSize.width - self.mainContentView.frame.width) / (self.contentSize.width - self.visibleSize.width)), y: 0, width: self.mainContentView.frame.width, height: self.mainContentView.frame.height)
         
@@ -121,10 +124,17 @@ class CardView: UIScrollView, UIScrollViewDelegate {
         let nextIndex = index + 1
 
         let scalePoint =  1 + (self.contentViewMaxScale / 1.0) * (self.currentIndex - CGFloat(index))
-        let scalePointRevers =  (1.0 + self.contentViewMaxScale) - (self.contentViewMaxScale / 1.0) * (self.currentIndex - CGFloat(index))
+        let alpha =  0.5 + (0.5 / 1.0) * (self.currentIndex - CGFloat(index))
         
-        self.mainContentView.subviews[index].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePointRevers)
+        let scalePointReverse =  (1.0 + self.contentViewMaxScale) - (self.contentViewMaxScale / 1.0) * (self.currentIndex - CGFloat(index))
+        let alphaReverse =  1.0 - (0.5 / 1.0) * (self.currentIndex - CGFloat(index))
+        
+        self.mainContentView.subviews[index].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePointReverse)
+        self.mainContentView.subviews[index].alpha = alphaReverse
+        
+        
         if nextIndex < self.mainContentView.subviews.count{
+            self.mainContentView.subviews[nextIndex].alpha = alpha
             self.mainContentView.subviews[nextIndex].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePoint)
         }
         
@@ -148,8 +158,9 @@ class CardView: UIScrollView, UIScrollViewDelegate {
             y: self.defaultViewCenter.y - (self.contentViewHeight / 2),
             width: self.contentViewWidth,
             height: self.contentViewHeight))
-        contentView.backgroundColor = #colorLiteral(red: 0.521568656, green: 0.1098039225, blue: 0.05098039284, alpha: 1)
+        contentView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
         contentView.scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: (1.0 + self.contentViewMaxScale))
+        
         self.mainContentView.addSubview(contentView)
         
         for index in 1..<self.contentHorizonViewCount{
@@ -163,61 +174,28 @@ class CardView: UIScrollView, UIScrollViewDelegate {
                 y: y,
                 width: self.contentViewWidth,
                 height: self.contentViewHeight))
-            
-            contentView.backgroundColor = #colorLiteral(red: 0.521568656, green: 0.1098039225, blue: 0.05098039284, alpha: 1)
+            contentView.alpha = 0.5
+            contentView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             self.mainContentView.addSubview(contentView)
         }
     }
     
     
-    var contentHorizonViewIndex:Int{
-        set{
-            self.scrollRectToVisible(
-                CGRect(x: (self.contentViewWidth + betweenContentViewHorizonDistance) * CGFloat(newValue - 1),
-                       y: self.contentOffset.y,
-                       width: self.frame.width,
-                       height: self.frame.height),
-                animated: false)
-        }
-        get{
-            
-            for index in 1...self.contentHorizonViewCount{
-                if (self.contentOffset.x >= ((self.contentViewWidth + betweenContentViewHorizonDistance) * CGFloat(index - 1))) &&
-                    (self.contentOffset.x <= ((self.contentViewWidth + betweenContentViewHorizonDistance) * CGFloat(index ))){
-                    
-                    self.scrollRectToVisible(
-                        CGRect(x: (self.contentViewWidth + betweenContentViewHorizonDistance) * CGFloat(index),
-                               y: self.contentOffset.y,
-                               width: self.frame.width,
-                               height: self.frame.height),
-                        animated: true)
-                    
-                    
-                    
-                    
-                    return index
-                }
-            }
-            return 1
-        }
-    }
+    
+    
+    
     
     override func awakeFromNib() {
         super.awakeFromNib()
         self.delegate = self
         self.initialize()
-        self.addObserver(self, forKeyPath: "contentOffset", options: .new, context: nil)
+
 
     }
     
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-//        print("\(change![.newKey])")
-    }
-    
-    
     
     override func draw(_ rect: CGRect) {
-        print("\(rect.debugDescription)")
+        
     }
 
 }

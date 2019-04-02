@@ -22,7 +22,7 @@ class ViewController: UIViewController{
     
     @IBAction func TestButton(_ sender: Any) {
         self.scrollView.isScrollEnabled = true
-        print(self.scrollView.contentHorizonViewIndex)
+        
     }
     
     
@@ -30,14 +30,14 @@ class ViewController: UIViewController{
     @IBAction func nextAction(_ sender: Any) {
 //        self.scrollView.moveNext()
         index += 1
-        self.scrollView.contentHorizonViewIndex = index
+        self.scrollView.move(At: index)
         print(index)
         
     }
     @IBAction func beforAction(_ sender: Any) {
 //        self.scrollView.moveBefore()
         index -= 1
-        self.scrollView.contentHorizonViewIndex = index
+        self.scrollView.move(At: index)
         print(index)
     }
     
