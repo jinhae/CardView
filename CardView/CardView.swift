@@ -34,7 +34,7 @@ class CardView: UIScrollView, UIScrollViewDelegate {
     let contentViewHeightRatio:CGFloat          = 0.6
     
     // content view사이의 거리
-    let betweenContentViewHorizonDistanceRatio:CGFloat = 0.5
+    let betweenContentViewHorizonDistanceRatio:CGFloat = 0.7
     let betweenContentViewVeritcalDistanceRatio:CGFloat = 0
     
     
