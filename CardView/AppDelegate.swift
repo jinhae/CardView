@@ -2,8 +2,8 @@
 //  AppDelegate.swift
 //  CardView
 //
-//  Created by 모바일보안팀 on 22/03/2019.
-//  Copyright © 2019 모바일보안팀. All rights reserved.
+//  Created by 이진해 on 22/03/2019.
+//  Copyright © 2019 이진해. All rights reserved.
 //
 
 import UIKit

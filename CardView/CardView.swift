@@ -2,26 +2,26 @@
 //  CardView.swift
 //  CardView
 //
-//  Created by 모바일보안팀 on 22/03/2019.
-//  Copyright © 2019 모바일보안팀. All rights reserved.
+//  Created by 이진해 on 22/03/2019.
+//  Copyright © 2019 이진해. All rights reserved.
 //
 
 import UIKit
 
 
-extension UIView{
-    func scale(defaultSize:CGSize, scale:CGFloat){
-        let widthVector  = (defaultSize.width * scale) - defaultSize.width
-        let heightVector = (defaultSize.height * scale) - defaultSize.height
-        
-        self.frame =  CGRect(x: self.center.x - (defaultSize.width + widthVector) / 2 ,
-                      y: self.center.y - (defaultSize.height + heightVector) / 2 ,
-                      width:    defaultSize.width + widthVector,
-                      height:   defaultSize.height + heightVector)
-    }
+
+protocol CardViewDataSource{
+    func cardViewNumberOfCards() -> Int
+    func cardViewWillDisplayCard(index:Int, frame:CGRect) -> UIView
 }
 
+
 class CardView: UIScrollView, UIScrollViewDelegate {
+    
+    var dataSource: CardViewDataSource?
+    
+    var defaultIndex:Int = 0
+    
     //Content View MaxScale
     let contentViewMaxScale:CGFloat = 0.2
     
@@ -38,7 +38,12 @@ class CardView: UIScrollView, UIScrollViewDelegate {
     
     
     // contentview 개수
-    let contentHorizonViewCount = 20
+    var contentHorizonViewCount:Int{
+        get{
+            guard let count = dataSource?.cardViewNumberOfCards() else {return 0}
+            return count
+        }
+    }
     let contentVerticalViewCount = 1
     
     // 최초 뷰 센터
@@ -110,9 +115,7 @@ class CardView: UIScrollView, UIScrollViewDelegate {
         if (index >= 0) && (index < self.contentHorizonViewCount){
             self.setContentOffset(CGPoint(x: self.frame.width * CGFloat(index), y: 0), animated: true)
         }
-        
     }
-    
     
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -137,65 +140,74 @@ class CardView: UIScrollView, UIScrollViewDelegate {
             self.mainContentView.subviews[nextIndex].alpha = alpha
             self.mainContentView.subviews[nextIndex].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePoint)
         }
-        
     }
 
     
     
+    func contentViewFrame(index:Int) -> CGRect {
+        var contentFrame = CGRect()
+        contentFrame.origin.x = self.defaultViewCenter.x - (self.contentViewWidth / 2) + ((self.contentViewWidth + self.betweenContentViewHorizonDistance) * CGFloat(index))
+        contentFrame.origin.y  = self.defaultViewCenter.y - (self.contentViewHeight / 2)
+        contentFrame.size.width = self.contentViewWidth
+        contentFrame.size.height = self.contentViewHeight
+        return contentFrame
+    }
+    
     func initialize(){
+        
         // mainContentView 초기화
         self.mainContentView = UIView(frame: CGRect(x: 0, y: 0, width: self.mainContentViewSize.width , height: self.mainContentViewSize.height))
         self.addSubview(self.mainContentView)
-        self.mainContentView.backgroundColor = #colorLiteral(red: 0.7450980544, green: 0.1568627506, blue: 0.07450980693, alpha: 1)
-        
         self.contentSize = CGSize(width: self.visibleSize.width * CGFloat(self.contentHorizonViewCount), height: self.visibleSize.height)
-        print("\(self.mainContentView.frame.width)")
-        print("ratio \(self.mainContentView.frame.width / self.contentSize.width)")
         
-        // ContentView  추가
-        let contentView = UIView(frame: CGRect(
-            x: self.defaultViewCenter.x - (self.contentViewWidth / 2),
-            y: self.defaultViewCenter.y - (self.contentViewHeight / 2),
-            width: self.contentViewWidth,
-            height: self.contentViewHeight))
-        contentView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-        contentView.scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: (1.0 + self.contentViewMaxScale))
-        
-        self.mainContentView.addSubview(contentView)
-        
-        for index in 1..<self.contentHorizonViewCount{
-            let x = self.defaultViewCenter.x - (self.contentViewWidth / 2) + ((self.contentViewWidth + self.betweenContentViewHorizonDistance)*CGFloat(index))
-            let y = self.defaultViewCenter.y - (self.contentViewHeight / 2)
+        for index in 0..<self.contentHorizonViewCount{
+            guard let contentView = dataSource?.cardViewWillDisplayCard(index: index, frame: contentViewFrame(index: index)) else {return}
+            if index == self.defaultIndex{
+                contentView.scale(defaultSize: CGSize(width:self.contentViewWidth,height: self.contentViewHeight), scale: 1.0 + self.contentViewMaxScale)
+
+                contentView.alpha = 1.0
+                
+            }else{
+                contentView.alpha = 0.5
+            }
             
-            
-            
-            let contentView = UIView(frame: CGRect(
-                x: x,
-                y: y,
-                width: self.contentViewWidth,
-                height: self.contentViewHeight))
-            contentView.alpha = 0.5
-            contentView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             self.mainContentView.addSubview(contentView)
         }
+        self.setContentOffset(CGPoint(x: self.frame.width * CGFloat(self.defaultIndex), y: 0), animated: false)
+
     }
     
-    
-    
-    
-    
+    func updateCardView(){
+        self.mainContentView.removeFromSuperview()
+        initialize()
+        
+    }
     
     override func awakeFromNib() {
         super.awakeFromNib()
         self.delegate = self
-        self.initialize()
-
 
     }
-    
     
     override func draw(_ rect: CGRect) {
-        
+        if self.subviews.count == 1 {
+            self.mainContentView.removeFromSuperview()
+        }
+        self.initialize()
     }
 
+}
+
+
+
+extension UIView{
+    func scale(defaultSize:CGSize, scale:CGFloat){
+        let widthVector  = (defaultSize.width * scale) - defaultSize.width
+        let heightVector = (defaultSize.height * scale) - defaultSize.height
+        
+        self.frame =  CGRect(x: self.center.x - (defaultSize.width + widthVector) / 2 ,
+                             y: self.center.y - (defaultSize.height + heightVector) / 2 ,
+                             width:    defaultSize.width + widthVector,
+                             height:   defaultSize.height + heightVector)
+    }
 }
