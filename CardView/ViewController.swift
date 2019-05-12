@@ -18,7 +18,7 @@ class ViewController: UIViewController, CardViewDataSource{
     
     func cardViewNumberOfCards() -> Int {
         
-        return cards.count
+        return 4
     }
     
     
@@ -37,7 +37,7 @@ class ViewController: UIViewController, CardViewDataSource{
         
         print("viewController load")
         
-        self.scrollView.dataSource = self
+        
         
         let card1 = UIImageView()
         
@@ -65,6 +65,8 @@ class ViewController: UIViewController, CardViewDataSource{
         card4.image = UIImage.init(named: "card2")
         card4.contentMode = .scaleAspectFit
         cards.append(card4)
+        
+        self.scrollView.dataSource = self
         
     }
 }

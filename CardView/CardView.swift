@@ -119,29 +119,30 @@ class CardView: UIScrollView, UIScrollViewDelegate {
     
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        
-        self.mainContentView.frame = CGRect(x: self.contentOffset.x * ((self.contentSize.width - self.mainContentView.frame.width) / (self.contentSize.width - self.visibleSize.width)), y: 0, width: self.mainContentView.frame.width, height: self.mainContentView.frame.height)
-        
-        
-        let index = Int(self.currentIndex)
-        let nextIndex = index + 1
-
-        let scalePoint =  1 + (self.contentViewMaxScale / 1.0) * (self.currentIndex - CGFloat(index))
-        let alpha =  0.5 + (0.5 / 1.0) * (self.currentIndex - CGFloat(index))
-        
-        let scalePointReverse =  (1.0 + self.contentViewMaxScale) - (self.contentViewMaxScale / 1.0) * (self.currentIndex - CGFloat(index))
-        let alphaReverse =  1.0 - (0.5 / 1.0) * (self.currentIndex - CGFloat(index))
-        
-        self.mainContentView.subviews[index].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePointReverse)
-        self.mainContentView.subviews[index].alpha = alphaReverse
-        
-        
-        if nextIndex < self.mainContentView.subviews.count{
-            self.mainContentView.subviews[nextIndex].alpha = alpha
-            self.mainContentView.subviews[nextIndex].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePoint)
+        if dataSource != nil && self.contentHorizonViewCount > 1 && self.mainContentView != nil{
+            self.mainContentView.frame = CGRect(x: self.contentOffset.x * ((self.contentSize.width - self.mainContentView.frame.width) / (self.contentSize.width - self.visibleSize.width)), y: 0, width: self.mainContentView.frame.width, height: self.mainContentView.frame.height)
+            
+            
+            let index = Int(self.currentIndex)
+            let nextIndex = index + 1
+            
+            let scalePoint =  1 + (self.contentViewMaxScale / 1.0) * (self.currentIndex - CGFloat(index))
+            let alpha =  0.5 + (0.5 / 1.0) * (self.currentIndex - CGFloat(index))
+            
+            let scalePointReverse =  (1.0 + self.contentViewMaxScale) - (self.contentViewMaxScale / 1.0) * (self.currentIndex - CGFloat(index))
+            let alphaReverse =  1.0 - (0.5 / 1.0) * (self.currentIndex - CGFloat(index))
+            
+            self.mainContentView.subviews[index].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePointReverse)
+            self.mainContentView.subviews[index].alpha = alphaReverse
+            
+            
+            if nextIndex < self.mainContentView.subviews.count{
+                self.mainContentView.subviews[nextIndex].alpha = alpha
+                self.mainContentView.subviews[nextIndex].scale(defaultSize: CGSize(width: self.contentViewWidth, height: self.contentViewHeight), scale: scalePoint)
+            }
         }
     }
-
+    
     
     
     func contentViewFrame(index:Int) -> CGRect {
@@ -154,6 +155,10 @@ class CardView: UIScrollView, UIScrollViewDelegate {
     }
     
     func initialize(){
+        // option
+        self.isPagingEnabled = true
+        
+        
         
         // mainContentView 초기화
         self.mainContentView = UIView(frame: CGRect(x: 0, y: 0, width: self.mainContentViewSize.width , height: self.mainContentViewSize.height))
@@ -164,7 +169,7 @@ class CardView: UIScrollView, UIScrollViewDelegate {
             guard let contentView = dataSource?.cardViewWillDisplayCard(index: index, frame: contentViewFrame(index: index)) else {return}
             if index == self.defaultIndex{
                 contentView.scale(defaultSize: CGSize(width:self.contentViewWidth,height: self.contentViewHeight), scale: 1.0 + self.contentViewMaxScale)
-
+                
                 contentView.alpha = 1.0
                 
             }else{
@@ -173,8 +178,8 @@ class CardView: UIScrollView, UIScrollViewDelegate {
             
             self.mainContentView.addSubview(contentView)
         }
-        self.setContentOffset(CGPoint(x: self.frame.width * CGFloat(self.defaultIndex), y: 0), animated: false)
-
+        //        self.setContentOffset(CGPoint(x: self.frame.width * CGFloat(self.defaultIndex), y: 0), animated: false)
+        
     }
     
     func updateCardView(){
@@ -186,16 +191,17 @@ class CardView: UIScrollView, UIScrollViewDelegate {
     override func awakeFromNib() {
         super.awakeFromNib()
         self.delegate = self
-
+        
+        
     }
     
     override func draw(_ rect: CGRect) {
-        if self.subviews.count == 1 {
-            self.mainContentView.removeFromSuperview()
-        }
-        self.initialize()
+        //        if self.subviews.count == 1 {
+        //            self.mainContentView.removeFromSuperview()
+        //        }
+        initialize()
     }
-
+    
 }
 
 
